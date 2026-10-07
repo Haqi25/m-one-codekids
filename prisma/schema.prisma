@@ -1,0 +1,116 @@
+// CodeKids data model (PRD 4.6): User, ChildProfile, Class, Attempt, Progress, Badge, ChatLog.
+// Mission content lives in src/content (data-driven, FR-MISI-12), referenced here by missionId.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Adult account (parent or teacher). Children never register with personal data (FR-AUTH-01).
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  name         String
+  role         String // "PARENT" | "TEACHER"
+  familyCode   String?        @unique // parent only: code used by children to log in on any device
+  createdAt    DateTime       @default(now())
+  children     ChildProfile[]
+  classes      Class[]
+}
+
+model Class {
+  id        String         @id @default(cuid())
+  name      String
+  code      String         @unique
+  teacherId String
+  teacher   User           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  students  ChildProfile[]
+  createdAt DateTime       @default(now())
+}
+
+/// Minimal child data (NFR-SC-01): nickname, avatar, grade only.
+model ChildProfile {
+  id            String      @id @default(cuid())
+  nickname      String
+  avatar        String
+  grade         Int
+  pinHash       String
+  parentId      String?
+  parent        User?       @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  classId       String?
+  class         Class?      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  consentAt     DateTime?
+  dailyLimitMin Int? // null = no limit
+  soundOn       Boolean     @default(true)
+  onboarded     Boolean     @default(false)
+  lastActiveAt  DateTime?
+  createdAt     DateTime    @default(now())
+  progress      Progress[]
+  attempts      Attempt[]
+  badges        ChildBadge[]
+  chats         ChatLog[]
+}
+
+model Progress {
+  id          String       @id @default(cuid())
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  missionId   String
+  completed   Boolean      @default(false)
+  stars       Int          @default(0)
+  bestScore   Int          @default(0)
+  bestBlocks  Int?
+  attempts    Int          @default(0)
+  hintsUsed   Int          @default(0)
+  completedAt DateTime?
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([childId, missionId])
+}
+
+model Attempt {
+  id          String       @id @default(cuid())
+  childId     String
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  missionId   String
+  success     Boolean
+  blocksUsed  Int
+  hintsUsed   Int          @default(0)
+  stars       Int          @default(0)
+  score       Int          @default(0)
+  durationSec Int          @default(0)
+  createdAt   DateTime     @default(now())
+
+  @@index([childId, createdAt])
+}
+
+model ChildBadge {
+  id       String       @id @default(cuid())
+  childId  String
+  child    ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  badgeId  String
+  earnedAt DateTime     @default(now())
+
+  @@unique([childId, badgeId])
+}
+
+model ChatLog {
+  id        String       @id @default(cuid())
+  childId   String
+  child     ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  missionId String
+  role      String // "child" | "bibi"
+  content   String
+  hintLevel Int          @default(0)
+  flagged   Boolean      @default(false)
+  rating    Int? // 1 = 👍, -1 = 👎
+  createdAt DateTime     @default(now())
+
+  @@index([childId, missionId, createdAt])
+}
+

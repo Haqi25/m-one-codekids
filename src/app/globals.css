@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/* Design tokens (PRD 4.1 / NFR-UX-01). Tailwind v4 keeps theme config in CSS via @theme. */
+@theme {
+  --color-peach: #fff1e3;
+  --color-peach-200: #ffe2c6;
+  --color-peach-300: #ffd0a6;
+  --color-navy: #1b2a5c;
+  --color-navy-700: #2a3d7a;
+  --color-navy-300: #8a97c2;
+  --color-orange: #ff8a2b;
+  --color-orange-600: #e8701a;
+  --color-orange-700: #b85710; /* AA contrast for orange text on light bg */
+  --color-cta: #e86a10;
+  --color-cta-hover: #cf5c0b;
+  --color-leaf: #2bb673;
+  --color-leaf-700: #1a7f4e;
+  --color-sky: #4c6fff;
+  --color-sky-700: #2f4fd6;
+  --color-berry: #e5484d;
+  --color-sun: #ffc83d;
+  --color-ink: #2b2b3a;
+
+  --font-display: var(--font-baloo), "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: var(--font-nunito), "Nunito", ui-rounded, system-ui, sans-serif;
+
+  --radius-blob: 2rem;
+  --shadow-pop: 0 6px 0 0 rgb(27 42 92 / 0.18);
+  --shadow-pop-sm: 0 4px 0 0 rgb(27 42 92 / 0.18);
+  --shadow-soft: 0 10px 30px -10px rgb(27 42 92 / 0.25);
+
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-wiggle: wiggle 2.4s ease-in-out infinite;
+  --animate-pop-in: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-bounce-soft: bounce-soft 0.6s ease;
+  --animate-shake: shake 0.4s ease;
+  --animate-confetti: confetti-fall 1.6s ease-in forwards;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes bounce-soft {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-6px);
+    }
+    75% {
+      transform: translateX(6px);
+    }
+  }
+  @keyframes confetti-fall {
+    from {
+      transform: translateY(-20vh) rotate(0deg);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-peach font-sans text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-navy;
+    line-height: 1.15;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-sky);
+    outline-offset: 3px;
+    border-radius: 0.75rem;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+/* Pill CTA (PRD: rounded-full, orange, bold white text, min 48px touch target).
+   CTA uses a slightly deeper orange (#E86A10) + ≥19px bold text so white text meets WCAG AA large-text (≥3:1). */
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 py-3 font-display text-[1.2rem] font-bold transition select-none;
+  @apply active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-cta text-white shadow-pop-sm hover:bg-cta-hover hover:-translate-y-0.5;
+}
+@utility btn-navy {
+  @apply btn bg-navy text-white shadow-pop-sm hover:bg-navy-700 hover:-translate-y-0.5;
+}
+@utility btn-ghost {
+  @apply btn border-2 border-navy/15 bg-white text-navy hover:border-navy/40 hover:-translate-y-0.5;
+}
+@utility btn-leaf {
+  @apply btn bg-leaf-700 text-white shadow-pop-sm hover:-translate-y-0.5;
+}
+@utility card {
+  @apply rounded-[1.75rem] border-2 border-navy/10 bg-white shadow-soft;
+}
+@utility input {
+  @apply min-h-12 w-full rounded-2xl border-2 border-navy/15 bg-white px-4 py-3 text-lg text-ink placeholder:text-navy-300 focus:border-sky focus:outline-none;
+}
+@utility label {
+  @apply mb-1 block font-bold text-navy;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold;
+}
+
+/* Respect reduced motion (FR-LP-05, NFR-UX-06) — also toggled manually via [data-motion="off"]. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
