@@ -12,15 +12,17 @@ datasource db {
 
 /// Adult account (parent or teacher). Children never register with personal data (FR-AUTH-01).
 model User {
-  id           String         @id @default(cuid())
-  email        String         @unique
-  passwordHash String
-  name         String
-  role         String // "PARENT" | "TEACHER"
-  familyCode   String?        @unique // parent only: code used by children to log in on any device
-  createdAt    DateTime       @default(now())
-  children     ChildProfile[]
-  classes      Class[]
+  id                String         @id @default(cuid())
+  email             String         @unique
+  passwordHash      String
+  name              String
+  role              String // "PARENT" | "TEACHER"
+  familyCode        String?        @unique // parent only: code used by children to log in on any device
+  emailVerified     DateTime?
+  verificationToken String?        @unique
+  createdAt         DateTime       @default(now())
+  children          ChildProfile[]
+  classes           Class[]
 }
 
 model Class {

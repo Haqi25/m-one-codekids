@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { createAdultSession, clearAdultSession } from "@/lib/session";
 import { randomCode } from "@/lib/codes";
 import { redirect } from "next/navigation";
+import crypto from "crypto";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nama terlalu pendek"),
@@ -26,7 +27,9 @@ export async function register(prevState: any, formData: FormData) {
     return { error: "Email sudah terdaftar" };
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  // Catatan: bcryptjs async seringkali sangat lambat di beberapa versi Node (karena yield loop).
+  // Menggunakan hashSync dengan ronde 8 jauh lebih cepat dan cukup aman untuk prototyping.
+  const passwordHash = bcrypt.hashSync(password, 8);
   let familyCode = null;
 
   if (role === "PARENT") {
@@ -38,6 +41,8 @@ export async function register(prevState: any, formData: FormData) {
     }
   }
 
+  const verificationToken = crypto.randomUUID();
+
   const user = await db.user.create({
     data: {
       name,
@@ -45,11 +50,18 @@ export async function register(prevState: any, formData: FormData) {
       passwordHash,
       role,
       familyCode,
+      verificationToken,
     },
   });
 
-  await createAdultSession(user.id, user.role as "PARENT" | "TEACHER");
-  redirect("/dashboard");
+  // Simulasi pengiriman email
+  console.log(`\n\n=== MOCK EMAIL PENGIRIMAN ===`);
+  console.log(`Kepada: ${email}`);
+  console.log(`Subjek: Verifikasi Akun CodeKids Anda`);
+  console.log(`Link Verifikasi: http://localhost:3000/akun/verifikasi?token=${verificationToken}`);
+  console.log(`=============================\n\n`);
+
+  return { success: "Pendaftaran berhasil! Silakan cek kotak masuk email Anda untuk melakukan verifikasi akun sebelum masuk." };
 }
 
 export async function login(prevState: any, formData: FormData) {
@@ -63,6 +75,10 @@ export async function login(prevState: any, formData: FormData) {
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return { error: "Email atau password salah" };
+  }
+
+  if (!user.emailVerified) {
+    return { error: "Email belum diverifikasi. Silakan cek kotak masuk email Anda atau daftar kembali jika token kadaluarsa." };
   }
 
   await createAdultSession(user.id, user.role as "PARENT" | "TEACHER");

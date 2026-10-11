@@ -20,6 +20,11 @@ export default function DaftarPage() {
             {state.error}
           </div>
         )}
+        {state?.success && (
+          <div className="bg-leaf-100/50 text-leaf-700 p-4 rounded-lg text-sm border-2 border-leaf-700/20 font-bold">
+            {state.success}
+          </div>
+        )}
 
         <div className="space-y-1">
           <label className="label">Peran</label>

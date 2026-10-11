@@ -219,6 +219,123 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* Section 1 Baru: Gamification (Belajar Sambil Bermain) */}
+        <section className="py-20 px-6 bg-white relative overflow-hidden">
+          <div className="max-w-6xl mx-auto text-center">
+            <h2 className="text-4xl font-black text-navy mb-4">Belajar Sambil Bermain! 🎮</h2>
+            <p className="text-xl font-bold text-navy-700 max-w-2xl mx-auto mb-12">
+              Kumpulkan bintang, buka lencana rahasia, dan jadilah Jagoan Kode. Belajar terasa seperti main game!
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="card p-6 bg-sun/10 border-sun/20 transform hover:-translate-y-2 transition-transform">
+                <div className="text-5xl mb-4 animate-bounce-soft" style={{ animationDelay: '0s' }}>⭐</div>
+                <h3 className="font-black text-navy text-lg">Kumpulkan Bintang</h3>
+                <p className="text-sm font-bold text-navy-300">Selesaikan misi dengan blok paling sedikit</p>
+              </div>
+              <div className="card p-6 bg-sky/10 border-sky/20 transform hover:-translate-y-2 transition-transform">
+                <div className="text-5xl mb-4 animate-bounce-soft" style={{ animationDelay: '0.2s' }}>🏆</div>
+                <h3 className="font-black text-navy text-lg">Lencana Spesial</h3>
+                <p className="text-sm font-bold text-navy-300">Tantangan harian & pencapaian unik</p>
+              </div>
+              <div className="card p-6 bg-leaf/10 border-leaf/20 transform hover:-translate-y-2 transition-transform">
+                <div className="text-5xl mb-4 animate-bounce-soft" style={{ animationDelay: '0.4s' }}>🚀</div>
+                <h3 className="font-black text-navy text-lg">Naik Level</h3>
+                <p className="text-sm font-bold text-navy-300">Dari Penjelajah hingga Jagoan Kode</p>
+              </div>
+              <div className="card p-6 bg-berry/10 border-berry/20 transform hover:-translate-y-2 transition-transform">
+                <div className="text-5xl mb-4 animate-bounce-soft" style={{ animationDelay: '0.6s' }}>🧩</div>
+                <h3 className="font-black text-navy text-lg">Buka Karakter</h3>
+                <p className="text-sm font-bold text-navy-300">Kostum baru untuk Bibi AI</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 2 Baru: Testimonial */}
+        <section className="py-20 px-6 bg-sun/10 relative">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-4xl font-black text-navy text-center mb-12">Apa Kata Mereka? 💬</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="card p-8 bg-white relative">
+                <div className="text-4xl absolute -top-4 -left-2 text-sun">❝</div>
+                <p className="font-bold text-navy-700 mb-6 relative z-10">
+                  "Awalnya Budi suka main game terus, sekarang dia malah suka bikin program sendiri. Bibi AI sabar banget bantuin Budi mikir!"
+                </p>
+                <div className="flex items-center gap-3 border-t-2 border-navy/10 pt-4">
+                  <div className="w-10 h-10 bg-sky rounded-full flex justify-center items-center text-white font-bold">IB</div>
+                  <div>
+                    <h4 className="font-black text-navy">Ibu Sari</h4>
+                    <p className="text-xs font-bold text-navy-300">Orang Tua Budi (8 thn)</p>
+                  </div>
+                </div>
+              </div>
+              <div className="card p-8 bg-white relative">
+                <div className="text-4xl absolute -top-4 -left-2 text-sky">❝</div>
+                <p className="font-bold text-navy-700 mb-6 relative z-10">
+                  "Sangat membantu untuk mengenalkan logika dasar di kelas. Materinya nyambung banget sama pelajaran IPA dan Matematika."
+                </p>
+                <div className="flex items-center gap-3 border-t-2 border-navy/10 pt-4">
+                  <div className="w-10 h-10 bg-leaf-700 rounded-full flex justify-center items-center text-white font-bold">PA</div>
+                  <div>
+                    <h4 className="font-black text-navy">Pak Anton</h4>
+                    <p className="text-xs font-bold text-navy-300">Guru SD Kelas 3</p>
+                  </div>
+                </div>
+              </div>
+              <div className="card p-8 bg-white relative">
+                <div className="text-4xl absolute -top-4 -left-2 text-berry">❝</div>
+                <p className="font-bold text-navy-700 mb-6 relative z-10">
+                  "Aku suka banget pas misi kelinci cari wortel! Bibi kasih petunjuk, terus aku berhasil masukin ke keranjang."
+                </p>
+                <div className="flex items-center gap-3 border-t-2 border-navy/10 pt-4">
+                  <div className="w-10 h-10 bg-orange-600 rounded-full flex justify-center items-center text-white font-bold">NA</div>
+                  <div>
+                    <h4 className="font-black text-navy">Nadia</h4>
+                    <p className="text-xs font-bold text-navy-300">Penjelajah Kode (9 thn)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3 Baru: FAQ */}
+        <section className="py-20 px-6 bg-peach-200">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl font-black text-navy text-center mb-12">Pertanyaan Populer ❓</h2>
+            <div className="space-y-4">
+              <div className="card p-6 bg-white">
+                <h3 className="text-xl font-black text-navy mb-2">Apakah CodeKids gratis?</h3>
+                <p className="font-bold text-navy-700">Ya, 100% gratis! Platform ini dibangun untuk pendidikan anak Indonesia tanpa iklan dan biaya tersembunyi.</p>
+              </div>
+              <div className="card p-6 bg-white">
+                <h3 className="text-xl font-black text-navy mb-2">Anak saya belum bisa membaca lancar, bisa ikutan?</h3>
+                <p className="font-bold text-navy-700">Bisa! Kami menggunakan ikon dan suara sehingga anak bisa memahami instruksi cerita tanpa harus membaca teks panjang.</p>
+              </div>
+              <div className="card p-6 bg-white">
+                <h3 className="text-xl font-black text-navy mb-2">Apakah butuh laptop yang canggih?</h3>
+                <p className="font-bold text-navy-700">Tidak. CodeKids bisa diakses langsung melalui browser di laptop, tablet, bahkan smartphone asalkan ada koneksi internet.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4 Baru: Final CTA */}
+        <section className="py-24 px-6 bg-white relative overflow-hidden text-center">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(255,200,61,0.2),transparent_70%)] pointer-events-none"></div>
+          <div className="max-w-3xl mx-auto relative z-10">
+            <h2 className="text-5xl font-black text-navy mb-6">Siap Memulai Petualangan? 🚀</h2>
+            <p className="text-xl font-bold text-navy-700 mb-10">
+              Bergabunglah bersama ribuan anak lainnya belajar coding dengan cara yang menyenangkan.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+              <Link href="/akun/daftar" className="btn-primary text-xl px-10 py-5 animate-bounce-soft">
+                Daftar Sekarang Secara Gratis
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="bg-navy text-white py-12 px-6 border-t-4 border-cta">
