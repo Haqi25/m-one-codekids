@@ -7,6 +7,7 @@ import { createAdultSession, clearAdultSession } from "@/lib/session";
 import { randomCode } from "@/lib/codes";
 import { redirect } from "next/navigation";
 import crypto from "crypto";
+import { sendVerificationEmail } from "@/lib/mail";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nama terlalu pendek"),
@@ -54,12 +55,8 @@ export async function register(prevState: any, formData: FormData) {
     },
   });
 
-  // Simulasi pengiriman email
-  console.log(`\n\n=== MOCK EMAIL PENGIRIMAN ===`);
-  console.log(`Kepada: ${email}`);
-  console.log(`Subjek: Verifikasi Akun CodeKids Anda`);
-  console.log(`Link Verifikasi: http://localhost:3000/akun/verifikasi?token=${verificationToken}`);
-  console.log(`=============================\n\n`);
+  // Kirim email verifikasi via SMTP
+  await sendVerificationEmail(email, verificationToken);
 
   return { success: "Pendaftaran berhasil! Silakan cek kotak masuk email Anda untuk melakukan verifikasi akun sebelum masuk." };
 }
