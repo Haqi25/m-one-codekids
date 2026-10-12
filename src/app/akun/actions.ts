@@ -86,3 +86,79 @@ export async function logout() {
   await clearAdultSession();
   redirect("/akun/masuk");
 }
+
+export async function requestPasswordReset(prevState: any, formData: FormData) {
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
+
+  if (!email) {
+    return { error: "Email wajib diisi" };
+  }
+
+  const user = await db.user.findUnique({ where: { email } });
+
+  // Untuk keamanan (security best-practice), tetap tampilkan pesan sukses meskipun email tidak terdaftar
+  if (!user) {
+    return { success: "Jika email Anda terdaftar, kami telah mengirimkan tautan untuk mengatur ulang kata sandi." };
+  }
+
+  const resetToken = crypto.randomUUID();
+  const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 jam dari sekarang
+
+  await db.user.update({
+    where: { id: user.id },
+    data: {
+      resetPasswordToken: resetToken,
+      resetPasswordExpires: resetExpires,
+    },
+  });
+
+  const { sendPasswordResetEmail } = await import("@/lib/mail");
+  await sendPasswordResetEmail(email, resetToken);
+
+  return { success: "Jika email Anda terdaftar, kami telah mengirimkan tautan untuk mengatur ulang kata sandi." };
+}
+
+export async function resetPassword(prevState: any, formData: FormData) {
+  const token = formData.get("token") as string;
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!token) {
+    return { error: "Token tidak valid atau tidak ditemukan." };
+  }
+
+  if (!password || password.length < 8) {
+    return { error: "Kata sandi minimal 8 karakter." };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: "Konfirmasi kata sandi tidak cocok." };
+  }
+
+  const user = await db.user.findFirst({
+    where: {
+      resetPasswordToken: token,
+      resetPasswordExpires: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!user) {
+    return { error: "Tautan reset kata sandi tidak valid atau sudah kadaluarsa. Silakan minta tautan baru." };
+  }
+
+  const passwordHash = bcrypt.hashSync(password, 8);
+
+  await db.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    },
+  });
+
+  return { success: "Kata sandi Anda berhasil diperbarui! Silakan masuk dengan kata sandi baru." };
+}
+

@@ -69,3 +69,61 @@ export async function sendVerificationEmail(to: string, token: string) {
   }
 }
 
+export async function sendPasswordResetEmail(to: string, token: string) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const resetUrl = `${appUrl}/akun/reset-password?token=${token}`;
+
+  if (!smtpEmail || !smtpPassword) {
+    console.warn("\n⚠️ [EMAIL WARNING] EMAIL_USER atau EMAIL_PASS belum disetel di .env!");
+    console.log(`[SIMULASI RESET PASSWORD] Link untuk ${to}: ${resetUrl}\n`);
+    return { success: false, simulated: true };
+  }
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #fff9f5;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="color: #1b2a5c; margin-bottom: 8px;">Reset Password CodeKids 🔑</h1>
+        <p style="color: #666; font-size: 16px;">Permintaan pengaturan ulang kata sandi akun Anda</p>
+      </div>
+
+      <div style="background-color: #ffffff; padding: 24px; border-radius: 8px; border: 1px solid #ffe2c6;">
+        <p style="font-size: 16px; color: #333; line-height: 1.5;">
+          Halo, kami menerima permintaan untuk mengatur ulang kata sandi akun CodeKids Anda.
+        </p>
+        <p style="font-size: 16px; color: #333; line-height: 1.5;">
+          Klik tombol di bawah ini untuk membuat kata sandi baru. Tautan ini berlaku selama <strong>1 jam</strong>:
+        </p>
+
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${resetUrl}" style="background-color: #e86a10; color: white; padding: 14px 28px; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 16px; display: inline-block;">
+            Atur Ulang Kata Sandi
+          </a>
+        </div>
+
+        <p style="font-size: 14px; color: #777; line-height: 1.4;">
+          Atau salin tautan berikut ke browser Anda:<br />
+          <a href="${resetUrl}" style="color: #e86a10; word-break: break-all;">${resetUrl}</a>
+        </p>
+      </div>
+
+      <div style="text-align: center; margin-top: 24px; font-size: 12px; color: #999;">
+        <p>Jika Anda tidak merasa meminta reset password, abaikan email ini. Kata sandi Anda akan tetap aman.</p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const info = await mailTransporter.sendMail({
+      from: `"CodeKids" <${smtpEmail}>`,
+      to,
+      subject: "Atur Ulang Password Akun CodeKids Anda 🔑",
+      html: htmlContent,
+    });
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Gagal mengirim email reset password:", error);
+    return { success: false, error };
+  }
+}
+
+

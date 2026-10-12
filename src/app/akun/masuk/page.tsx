@@ -27,7 +27,12 @@ export default function MasukPage() {
         </div>
 
         <div className="space-y-1">
-          <label className="label">Password</label>
+          <div className="flex justify-between items-center">
+            <label className="label mb-0">Password</label>
+            <Link href="/akun/lupa-password" className="text-xs text-orange-700 font-bold hover:underline">
+              Lupa password?
+            </Link>
+          </div>
           <input name="password" type="password" className="input w-full" required />
         </div>
 

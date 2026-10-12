@@ -18,9 +18,11 @@ model User {
   name              String
   role              String // "PARENT" | "TEACHER"
   familyCode        String?        @unique // parent only: code used by children to log in on any device
-  emailVerified     DateTime?
-  verificationToken String?        @unique
-  createdAt         DateTime       @default(now())
+  emailVerified        DateTime?
+  verificationToken    String?        @unique
+  resetPasswordToken   String?        @unique
+  resetPasswordExpires DateTime?
+  createdAt            DateTime       @default(now())
   children          ChildProfile[]
   classes           Class[]
 }
