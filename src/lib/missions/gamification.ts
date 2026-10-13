@@ -41,7 +41,7 @@ export function rankFor(xp: number) {
   for (const r of RANKS) if (xp >= r.min) current = r;
   const idx = RANKS.indexOf(current);
   const next = RANKS[idx + 1];
-  return { ...current, next: next ?? null };
+  return { ...current, title: current.name, next: next ?? null };
 }
 
 export interface ProgressLite {
@@ -69,7 +69,13 @@ export function starsNeededToUnlock(level: number): number {
 
 export function isLevelUnlocked(level: number, progress: ProgressLite[]): boolean {
   if (level <= 1) return true;
-  return isLevelUnlocked(level - 1, progress) && starsInLevel(level - 1, progress) >= starsNeededToUnlock(level);
+  const prevLevel = level - 1;
+  const prevMissions = missionsByLevel(prevLevel);
+  const doneIds = new Set(progress.filter((p) => p.completed).map((p) => p.missionId));
+  const allPrevCompleted = prevMissions.length > 0 && prevMissions.every((m) => doneIds.has(m.id));
+  const hasEnoughStars = starsInLevel(prevLevel, progress) >= starsNeededToUnlock(level);
+
+  return isLevelUnlocked(prevLevel, progress) && (hasEnoughStars || allPrevCompleted);
 }
 
 export type MissionState = "locked" | "open" | "done";

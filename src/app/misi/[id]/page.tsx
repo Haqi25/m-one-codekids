@@ -20,6 +20,7 @@ export default async function MissionPage({ params }: { params: Promise<{ id: st
       mission={mission} 
       childId={child.id} 
       starsToUnlock={starsToUnlock}
+      initialSoundOn={child.soundOn}
     />
   );
 }

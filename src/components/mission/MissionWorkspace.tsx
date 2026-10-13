@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import type { Mission, Block, RunResult } from "@/lib/missions/types";
 import { BlockEditor } from "@/components/mission/BlockEditor";
@@ -6,19 +7,30 @@ import { BoardView } from "@/components/mission/BoardView";
 import { BibiMascot } from "@/components/brand/BibiMascot";
 import { feedbackFor } from "@/lib/missions/engine";
 import { TanyaBibi } from "@/components/mission/TanyaBibi";
+import { MissionSuccessModal } from "@/components/mission/MissionSuccessModal";
+import { soundEngine } from "@/lib/audio";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// The interactive mission workspace
+interface SuccessData {
+  stars: number;
+  score: number;
+  optimalBlocks: number;
+  blocksUsed: number;
+  newBadges: string[];
+  nextMissionId: string | null;
+}
 
 export default function MissionWorkspace({ 
   mission, 
   childId,
   starsToUnlock,
+  initialSoundOn = true,
 }: { 
   mission: Mission; 
   childId: string;
   starsToUnlock: number;
+  initialSoundOn?: boolean;
 }) {
   const router = useRouter();
   const [program, setProgram] = useState<Block[]>([]);
@@ -27,10 +39,12 @@ export default function MissionWorkspace({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isBibiOpen, setIsBibiOpen] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(initialSoundOn);
+  const [successData, setSuccessData] = useState<SuccessData | null>(null);
 
   const handleResult = async (res: RunResult) => {
     setResult(res);
-    setAttempts(a => a + 1);
+    setAttempts((a) => a + 1);
     
     // Save attempt (and progress if success) to server via API
     try {
@@ -45,8 +59,17 @@ export default function MissionWorkspace({
         method: "POST",
         body: data,
       });
+
       if (res.success && response.ok) {
-        // We will show a success modal, then route back to map
+        const json = await response.json();
+        setSuccessData({
+          stars: json.stars,
+          score: json.score,
+          optimalBlocks: json.optimalBlocks || mission.optimalBlocks,
+          blocksUsed: json.blocksUsed || res.blocksUsed,
+          newBadges: json.newBadges || [],
+          nextMissionId: json.nextMissionId || null,
+        });
       }
     } catch (e) {
       console.error(e);
@@ -55,19 +78,36 @@ export default function MissionWorkspace({
     }
   };
 
+  const handleRetry = () => {
+    setSuccessData(null);
+    setResult(null);
+  };
+
+  const toggleSound = () => {
+    const next = soundEngine.toggle();
+    setSoundEnabled(next);
+  };
+
   return (
     <div className="flex flex-col h-dvh bg-peach overflow-hidden">
       {/* Top Bar */}
       <header className="bg-white px-4 py-3 border-b-2 border-navy/10 flex justify-between items-center z-10 shadow-sm shrink-0">
-        <Link href="/peta" className="btn-ghost !min-h-10 px-4 py-2 text-sm">⬅️ Peta</Link>
+        <Link href="/peta" className="btn-ghost !min-h-10 px-4 py-2 text-sm">
+          ⬅️ Peta
+        </Link>
         <h1 className="font-display font-bold text-navy text-xl text-center flex-1 mx-4 truncate">
           Misi {mission.order}: {mission.title}
         </h1>
-        <div className="flex gap-2">
-          {/* Stars indicator */}
-          <div className="bg-peach-200 text-orange-700 font-bold px-3 py-1.5 rounded-full flex gap-1 items-center">
-             ⭐ <span className="hidden sm:inline">Terkumpul</span>
-          </div>
+        <div className="flex gap-2 items-center">
+          {/* Sound Toggle Button */}
+          <button
+            onClick={toggleSound}
+            className="bg-peach-200 hover:bg-peach-300 text-navy font-bold px-3 py-1.5 rounded-full flex gap-1 items-center transition-colors text-sm"
+            title={soundEnabled ? "Matikan Suara" : "Nyalakan Suara"}
+          >
+            <span>{soundEnabled ? "🔊" : "🔇"}</span>
+            <span className="hidden sm:inline text-xs">{soundEnabled ? "Suara Nyala" : "Hening"}</span>
+          </button>
         </div>
       </header>
 
@@ -85,7 +125,7 @@ export default function MissionWorkspace({
            </div>
            
            <div className="flex-1 p-4 md:p-6 overflow-y-auto">
-             <BoardView board={mission.board} program={program} onResult={handleResult} />
+             <BoardView board={mission.board} mission={mission} program={program} onResult={handleResult} />
              
              {/* Feedback Area */}
              {result && (
@@ -107,6 +147,7 @@ export default function MissionWorkspace({
         {/* Right: Block Editor */}
         <section className="w-full md:w-7/12 lg:w-1/2 flex flex-col bg-peach/10 p-4 relative">
            <BlockEditor 
+             mission={mission}
              program={program} 
              onChange={setProgram} 
              palette={mission.palette} 
@@ -129,23 +170,22 @@ export default function MissionWorkspace({
              attempts={attempts}
              isOpen={isBibiOpen}
              onClose={() => setIsBibiOpen(false)}
-             onHintUsed={() => setHintsUsed(h => h + 1)}
+             onHintUsed={() => setHintsUsed((h) => h + 1)}
            />
         </section>
 
-        {/* Success Overlay */}
-        {result?.success && !isSubmitting && (
-           <div className="absolute inset-0 bg-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-             <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-soft animate-pop-in">
-               <BibiMascot className="w-32 h-32 mx-auto mb-4" mood="cheer" />
-               <h2 className="text-3xl font-display text-navy mb-2">Misi Berhasil!</h2>
-               <div className="flex justify-center gap-2 text-4xl mb-6">
-                 {/* TODO: Calculate actual stars based on constraints */}
-                 ⭐ ⭐ ⭐
-               </div>
-               <Link href="/peta" className="btn-primary w-full text-xl py-4">Lanjut Petualangan 🚀</Link>
-             </div>
-           </div>
+        {/* Dynamic Celebration Modal with sound, stars, XP, badges, & confetti */}
+        {successData && (
+          <MissionSuccessModal
+            stars={successData.stars}
+            score={successData.score}
+            blocksUsed={successData.blocksUsed}
+            optimalBlocks={successData.optimalBlocks}
+            newBadges={successData.newBadges}
+            nextMissionId={successData.nextMissionId}
+            onRetry={handleRetry}
+            soundEnabled={soundEnabled}
+          />
         )}
       </main>
     </div>

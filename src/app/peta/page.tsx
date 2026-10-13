@@ -1,17 +1,19 @@
 import { requireChild } from "@/lib/session";
 import { db } from "@/lib/db";
 import { LEVELS, MISSIONS } from "@/content/missions";
-import { missionState, totals } from "@/lib/missions/gamification";
+import { missionState, totals, isLevelUnlocked, starsInLevel, maxStarsInLevel, starsNeededToUnlock } from "@/lib/missions/gamification";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { BadgesModalButton } from "@/components/mission/BadgesModal";
 
 export default async function PetaPage() {
   const child = await requireChild();
   
-  // Load progress
-  const progress = await db.progress.findMany({
-    where: { childId: child.id }
-  });
+  // Load progress and badges
+  const [progress, userBadges] = await Promise.all([
+    db.progress.findMany({ where: { childId: child.id } }),
+    db.childBadge.findMany({ where: { childId: child.id } }),
+  ]);
 
   const { stars, score, rank } = totals(progress);
 
@@ -20,13 +22,14 @@ export default async function PetaPage() {
       {/* Header */}
       <header className="p-4 bg-navy flex justify-between items-center shadow-soft sticky top-0 z-10">
         <Logo className="text-white brightness-200" />
-        <div className="flex gap-4 items-center">
-          <div className="bg-sky/30 px-4 py-2 rounded-full font-bold flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+          <BadgesModalButton userBadgeIds={userBadges.map((b) => b.badgeId)} />
+          <div className="bg-sky/30 px-3 py-1.5 rounded-full font-bold flex gap-2 text-xs sm:text-sm">
             <span>🌟 {stars}</span>
             <span>🏆 {score} ({rank.name})</span>
           </div>
-          <div className="flex items-center gap-2 bg-navy-700 px-3 py-1.5 rounded-full">
-            <span className="text-2xl">{child.avatar}</span>
+          <div className="flex items-center gap-1.5 bg-navy-700 px-2.5 py-1.5 rounded-full text-xs sm:text-sm">
+            <span className="text-xl">{child.avatar}</span>
             <span className="font-bold">{child.nickname}</span>
           </div>
         </div>
@@ -42,13 +45,35 @@ export default async function PetaPage() {
           
           {LEVELS.map(level => {
             const levelMissions = MISSIONS.filter(m => m.level === level.level).sort((a,b) => a.order - b.order);
+            const unlocked = isLevelUnlocked(level.level, progress);
+            const currentStars = starsInLevel(level.level, progress);
+            const maxStars = maxStarsInLevel(level.level);
+            const neededStars = starsNeededToUnlock(level.level);
+
             return (
-              <section key={level.level} className="card p-6 md:p-8 bg-white/10 border-white/20 backdrop-blur-md">
+              <section 
+                key={level.level} 
+                className={`card p-6 md:p-8 backdrop-blur-md transition-all ${
+                  unlocked 
+                    ? 'bg-white/10 border-white/20' 
+                    : 'bg-navy-900/40 border-white/10 opacity-80'
+                }`}
+              >
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-display text-sun drop-shadow-sm flex items-center justify-center gap-2">
                     <span className="text-4xl">{level.emoji}</span> Level {level.level}: {level.title}
                   </h2>
                   <p className="text-sky-100 font-bold mt-2">{level.subtitle}</p>
+                  
+                  {unlocked ? (
+                    <div className="inline-flex items-center gap-1.5 bg-leaf-500/20 text-leaf-300 border border-leaf-400/30 text-xs px-3 py-1 rounded-full font-bold mt-3">
+                      <span>⭐ {currentStars} / {maxStars} Bintang Terkumpul</span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-200 border border-amber-400/30 text-xs px-3 py-1 rounded-full font-bold mt-3">
+                      <span>🔒 Terkunci (Butuh {neededStars} ⭐ di Level {level.level - 1} atau selesaikan semua misinya)</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex flex-wrap justify-center gap-6">

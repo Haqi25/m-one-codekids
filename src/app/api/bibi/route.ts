@@ -58,23 +58,44 @@ Sesuaikan jawabanmu dengan pertanyaan anak dan konteks blok yang sudah mereka su
     }));
 
     // Add current message to chat history format
-    const formattedHistory = [
+    const contents = [
       ...chatHistory,
+      { role: "user", parts: [{ text: message }] }
     ];
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        { role: "system", parts: [{ text: systemPrompt }] },
-        ...formattedHistory,
-        { role: "user", parts: [{ text: message }] }
-      ],
-      config: {
-        temperature: 0.7,
-      }
-    });
+    const primaryModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+    const fallbackModel = "gemini-flash-latest";
 
-    const reply = response.text;
+    let reply = "";
+
+    try {
+      const response = await ai.models.generateContent({
+        model: primaryModel,
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.7,
+        }
+      });
+      reply = response.text || "";
+    } catch (primaryErr) {
+      console.warn(`Primary Gemini model (${primaryModel}) failed, trying fallback (${fallbackModel})...`, primaryErr);
+      try {
+        const fallbackRes = await ai.models.generateContent({
+          model: fallbackModel,
+          contents,
+          config: {
+            systemInstruction: systemPrompt,
+            temperature: 0.7,
+          }
+        });
+        reply = fallbackRes.text || "";
+      } catch (fallbackErr) {
+        console.error("All Gemini models failed:", fallbackErr);
+        // FR-AI-S6: Friendly fallback when API is down or throttled
+        reply = "Bibi lagi istirahat sebentar nih, coba tanyakan lagi dalam beberapa detik ya! 😊 Semangat terus!";
+      }
+    }
     
     // Log interaction in DB asynchronously
     try {
@@ -109,9 +130,9 @@ Sesuaikan jawabanmu dengan pertanyaan anak dan konteks blok yang sudah mereka su
 
   } catch (error) {
     console.error("Bibi AI Error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      reply: "Bibi lagi minum teh sebentar ☕. Coba tanyakan lagi ya!",
+      isHint: false
+    });
   }
 }

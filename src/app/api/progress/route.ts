@@ -81,10 +81,17 @@ export async function POST(request: Request) {
         });
       }
 
-      // Check Badges
+      // Check Badges & find newly earned badges
       const allProgress = await db.progress.findMany({ where: { childId: child.id } });
+      const currentBadges = await db.childBadge.findMany({ where: { childId: child.id } });
+      const currentBadgeSet = new Set(currentBadges.map((b) => b.badgeId));
+
       const earnedBadges = evaluateBadges(allProgress, { success, stars, hintsUsed });
+      const newBadges: string[] = [];
       for (const badgeId of earnedBadges) {
+        if (!currentBadgeSet.has(badgeId)) {
+          newBadges.push(badgeId);
+        }
         await db.childBadge.upsert({
           where: { childId_badgeId: { childId: child.id, badgeId } },
           create: { childId: child.id, badgeId },
@@ -103,8 +110,11 @@ export async function POST(request: Request) {
         success: true, 
         stars, 
         score,
+        optimalBlocks: mission.optimalBlocks,
+        blocksUsed,
         badges: earnedBadges,
-        nextMission: next?.id 
+        newBadges,
+        nextMissionId: next?.id ?? null,
       });
 
     } else {

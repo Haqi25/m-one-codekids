@@ -87,23 +87,28 @@ export default async function AnakDetailPage({ params }: { params: Promise<{ id:
       <div className="card">
         <h2 className="text-xl font-display text-navy mb-4">Penguasaan Konsep</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {concepts.map(concept => {
-            const level = conceptMastery(concept as any, child.progress, child.attempts);
-            let label = "Belum Mulai";
+          {[
+            { id: "sequencing" as const, name: "Sequencing (Urutan)" },
+            { id: "looping" as const, name: "Looping (Perulangan)" },
+            { id: "conditional" as const, name: "Kondisional (IF-ELSE)" },
+          ].map((c) => {
+            const info = conceptMastery(c.id, child.progress, child.attempts);
             let icon = "⚪";
-            if (level === "mastered") { label = "Sudah Paham"; icon = "✅"; }
-            else if (level === "learning") { label = "Sedang Belajar"; icon = "⏳"; }
-            else if (level === "struggling") { label = "Perlu Bantuan"; icon = "⚠️"; }
+            if (info.mastery === "Sudah Paham") icon = "✅";
+            else if (info.mastery === "Sedang Belajar") icon = "⏳";
+            else if (info.mastery === "Perlu Bantuan") icon = "⚠️";
             
             return (
-              <div key={concept} className="bg-peach/30 p-4 rounded-xl flex items-center gap-3">
+              <div key={c.id} className="bg-peach/30 p-4 rounded-xl flex items-center gap-3">
                 <div className="text-2xl">{icon}</div>
                 <div>
-                  <div className="font-bold text-navy">{concept}</div>
-                  <div className="text-sm text-ink">{label}</div>
+                  <div className="font-bold text-navy">{c.name}</div>
+                  <div className="text-sm text-ink">
+                    {info.mastery} ({info.completed}/{info.total} Misi)
+                  </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
