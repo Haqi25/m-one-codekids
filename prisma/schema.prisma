@@ -2,7 +2,8 @@
 // Mission content lives in src/content (data-driven, FR-MISI-12), referenced here by missionId.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
