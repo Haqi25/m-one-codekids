@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { getChildSession } from "@/lib/session";
 import { db } from "@/lib/db";
+import { getMission } from "@/content/missions";
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -63,38 +64,47 @@ Sesuaikan jawabanmu dengan pertanyaan anak dan konteks blok yang sudah mereka su
       { role: "user", parts: [{ text: message }] }
     ];
 
-    const primaryModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-    const fallbackModel = "gemini-flash-latest";
+    const candidateModels = Array.from(
+      new Set(
+        [
+          process.env.GEMINI_MODEL,
+          "gemini-3.5-flash",
+          "gemini-3.1-flash-lite",
+          "gemini-flash-latest",
+        ].filter(Boolean) as string[]
+      )
+    );
 
     let reply = "";
 
-    try {
-      const response = await ai.models.generateContent({
-        model: primaryModel,
-        contents,
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.7,
-        }
-      });
-      reply = response.text || "";
-    } catch (primaryErr) {
-      console.warn(`Primary Gemini model (${primaryModel}) failed, trying fallback (${fallbackModel})...`, primaryErr);
+    for (const model of candidateModels) {
       try {
-        const fallbackRes = await ai.models.generateContent({
-          model: fallbackModel,
+        const response = await ai.models.generateContent({
+          model,
           contents,
           config: {
             systemInstruction: systemPrompt,
             temperature: 0.7,
-          }
+          },
         });
-        reply = fallbackRes.text || "";
-      } catch (fallbackErr) {
-        console.error("All Gemini models failed:", fallbackErr);
-        // FR-AI-S6: Friendly fallback when API is down or throttled
-        reply = "Bibi lagi istirahat sebentar nih, coba tanyakan lagi dalam beberapa detik ya! 😊 Semangat terus!";
+        if (response.text) {
+          reply = response.text.trim();
+          break;
+        }
+      } catch (err: any) {
+        console.warn(`Gemini model ${model} unavailable (${err?.status || err?.code || "error"}), trying next model candidate...`);
       }
+    }
+
+    // FR-AI-S6 & FR-MISI-03: Educative fallback using authored tiered hints if all AI models are unreachable
+    if (!reply) {
+      const mission = getMission(missionId);
+      const hintIdx = Math.min(Math.max(hintLevel - 1, 0), (mission?.hints?.length || 1) - 1);
+      const authoredHint = mission?.hints?.[hintIdx];
+
+      reply = authoredHint
+        ? `Bibi punya petunjuk buatmu: "${authoredHint}" ✨ Coba periksa blokmu ya!`
+        : "Bibi lagi minum teh sebentar ☕. Coba periksa urutan blok yang sudah kamu pasang ya, kamu pasti bisa!";
     }
     
     // Log interaction in DB asynchronously

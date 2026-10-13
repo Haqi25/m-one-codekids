@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BibiMascot } from "@/components/brand/BibiMascot";
+import { speakBibiText, stopSpeaking, useSpeechSupported } from "@/lib/speech";
 
 type Message = {
   id: string;
@@ -14,9 +15,11 @@ const INITIAL_CONVERSATION: Message[] = [
 ];
 
 export function BibiDemo() {
+  const isSpeechSupported = useSpeechSupported();
   const [messages, setMessages] = useState<Message[]>(INITIAL_CONVERSATION);
   const [isTyping, setIsTyping] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
 
   useEffect(() => {
     // Initial Bibi reply
@@ -28,10 +31,28 @@ export function BibiDemo() {
       setIsTyping(false);
       setShowOptions(true);
     }, 1500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      stopSpeaking();
+    };
   }, []);
 
+  const handleToggleSpeak = (msgId: string, text: string) => {
+    if (speakingId === msgId) {
+      stopSpeaking();
+      setSpeakingId(null);
+    } else {
+      speakBibiText(text, {
+        onStart: () => setSpeakingId(msgId),
+        onEnd: () => setSpeakingId(null),
+        onError: () => setSpeakingId(null),
+      });
+    }
+  };
+
   const handleOptionClick = (option: string, reply: string) => {
+    stopSpeaking();
+    setSpeakingId(null);
     setShowOptions(false);
     setMessages((prev) => [...prev, { id: Date.now().toString(), sender: "child", text: option }]);
     setIsTyping(true);
@@ -45,21 +66,49 @@ export function BibiDemo() {
 
   return (
     <div className="card max-w-2xl mx-auto overflow-hidden flex flex-col h-[500px] shadow-pop">
-      <div className="bg-peach-200 p-4 border-b-2 border-navy/10 flex items-center gap-3">
-        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border-2 border-navy/10">
-           <BibiMascot mood="happy" className="w-10 h-10 translate-y-1" />
+      <div className="bg-peach-200 p-4 border-b-2 border-navy/10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm overflow-hidden border-2 border-navy/10">
+            <BibiMascot mood="happy" className="w-10 h-10 translate-y-1" />
+          </div>
+          <div>
+            <h3 className="text-xl font-display font-bold text-navy m-0">Bibi AI</h3>
+            <p className="text-sm font-bold text-orange-600 m-0">Teman Belajar Coding</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-xl font-display font-bold text-navy m-0">Bibi AI</h3>
-          <p className="text-sm font-bold text-orange-600 m-0">Teman Belajar Coding</p>
-        </div>
+
+        {isSpeechSupported && (
+          <span className="text-xs bg-peach text-navy-700 px-2.5 py-1 rounded-full font-bold border border-navy/10">
+            🔊 Dilengkapi Suara
+          </span>
+        )}
       </div>
       
       <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4 bg-white">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender === "child" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] p-3 rounded-2xl ${msg.sender === "child" ? "bg-sky text-white rounded-br-sm" : "bg-peach-200 text-ink rounded-bl-sm"}`}>
-              {msg.text}
+            <div className={`max-w-[85%] p-3 rounded-2xl ${
+              msg.sender === "child" 
+                ? "bg-sky text-white rounded-br-sm" 
+                : "bg-peach-200 text-ink rounded-bl-sm"
+            }`}>
+              <div>{msg.text}</div>
+              {msg.sender === "bibi" && isSpeechSupported && (
+                <div className="mt-2 pt-1 border-t border-navy/10 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleSpeak(msg.id, msg.text)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold transition-all select-none cursor-pointer ${
+                      speakingId === msg.id
+                        ? "bg-orange text-white shadow-sm animate-pulse"
+                        : "bg-white/80 text-navy-700 hover:bg-orange hover:text-white"
+                    }`}
+                  >
+                    <span>{speakingId === msg.id ? "⏹️" : "🔊"}</span>
+                    <span>{speakingId === msg.id ? "Hentikan" : "Dengarkan"}</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -106,4 +155,3 @@ export function BibiDemo() {
     </div>
   );
 }
-
