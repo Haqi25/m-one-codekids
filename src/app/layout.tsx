@@ -13,6 +13,15 @@ export const metadata: Metadata = {
   description:
     "Belajar coding sambil bermain, ditemani Bibi AI yang sabar, dan dipantau orang tua dan guru. Sequencing, Looping, dan IF-ELSE lewat misi Matematika & IPA.",
   applicationName: "CodeKids",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: [
+      { url: "/apple-icon.svg", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export const viewport: Viewport = {

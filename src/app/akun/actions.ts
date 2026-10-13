@@ -19,7 +19,7 @@ const registerSchema = z.object({
 export async function register(prevState: any, formData: FormData) {
   const result = registerSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) {
-    return { error: result.error.errors[0].message };
+    return { error: result.error.issues[0]?.message ?? "Data pendaftaran tidak valid" };
   }
 
   const { name, email, password, role } = result.data;

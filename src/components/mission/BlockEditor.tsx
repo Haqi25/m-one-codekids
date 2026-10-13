@@ -22,9 +22,10 @@ export function BlockEditor({
   const [dragPayload, setDragPayload] = useState<DragPayload | null>(null);
   const [activeDropTarget, setActiveDropTarget] = useState<string | null>(null);
 
-  const isSortBoard = mission?.board.kind === "sort";
-  const conditions: SortCondition[] = isSortBoard ? mission.board.conditions : [];
-  const boxes: SortBox[] = isSortBoard ? mission.board.boxes : [];
+  const sortBoard = mission?.board.kind === "sort" ? mission.board : null;
+  const isSortBoard = Boolean(sortBoard);
+  const conditions: SortCondition[] = sortBoard ? sortBoard.conditions : [];
+  const boxes: SortBox[] = sortBoard ? sortBoard.boxes : [];
 
   const getBoxInfo = (boxId: string) => boxes.find((b) => b.id === boxId);
   const getCondInfo = (condId: string) => conditions.find((c) => c.id === condId);

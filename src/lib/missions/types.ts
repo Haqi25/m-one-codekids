@@ -1,5 +1,7 @@
 // Core types for mission content and the visual block program.
 
+export type { RunResult, GridFrame, SortFrame, FailReason } from "./engine";
+
 export type Dir = "up" | "down" | "left" | "right";
 export type Concept = "sequencing" | "looping" | "conditional";
 
