@@ -1,17 +1,56 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { register } from "../actions";
 import Link from "next/link";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 
 export default function DaftarPage() {
   const [state, formAction, isPending] = useActionState(register, null);
+  const [role, setRole] = useState<"PARENT" | "TEACHER">("PARENT");
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-2xl font-display text-navy mb-2">Buat Akun</h1>
         <p className="text-ink">Pilih peran Anda untuk melanjutkan</p>
+      </div>
+
+      {/* Role Toggle Selector */}
+      <div className="flex bg-peach/40 p-1 rounded-xl">
+        <button
+          type="button"
+          onClick={() => setRole("PARENT")}
+          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+            role === "PARENT"
+              ? "bg-white text-navy shadow-sm"
+              : "text-ink/70 hover:text-navy"
+          }`}
+        >
+          Orang Tua
+        </button>
+        <button
+          type="button"
+          onClick={() => setRole("TEACHER")}
+          className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+            role === "TEACHER"
+              ? "bg-white text-navy shadow-sm"
+              : "text-ink/70 hover:text-navy"
+          }`}
+        >
+          Guru
+        </button>
+      </div>
+
+      <GoogleAuthButton mode="register" role={role} />
+
+      <div className="relative my-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-peach/80" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-ink/70 font-medium">atau daftar dengan email</span>
+        </div>
       </div>
 
       <form action={formAction} className="space-y-4">
@@ -26,13 +65,7 @@ export default function DaftarPage() {
           </div>
         )}
 
-        <div className="space-y-1">
-          <label className="label">Peran</label>
-          <select name="role" className="input w-full" required>
-            <option value="PARENT">Orang Tua</option>
-            <option value="TEACHER">Guru</option>
-          </select>
-        </div>
+        <input type="hidden" name="role" value={role} />
 
         <div className="space-y-1">
           <label className="label">Nama Lengkap</label>
@@ -52,7 +85,7 @@ export default function DaftarPage() {
 
         <div className="pt-2">
           <button type="submit" disabled={isPending} className="btn-primary w-full">
-            {isPending ? "Mendaftar..." : "Daftar"}
+            {isPending ? "Mendaftar..." : `Daftar sebagai ${role === "PARENT" ? "Orang Tua" : "Guru"}`}
           </button>
         </div>
       </form>
@@ -63,8 +96,12 @@ export default function DaftarPage() {
           Masuk di sini
         </Link>
       </div>
+
       <div className="text-center text-xs text-ink/70 pt-4 border-t border-peach/50">
-        Catatan: Login Google belum tersedia.
+        Anak-anak masuk menggunakan PIN dan Kode Keluarga / Kelas di{" "}
+        <Link href="/masuk" className="text-navy font-bold hover:underline">
+          Halaman Masuk Anak
+        </Link>.
       </div>
     </div>
   );

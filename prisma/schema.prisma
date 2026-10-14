@@ -15,11 +15,13 @@ datasource db {
 model User {
   id                String         @id @default(cuid())
   email             String         @unique
-  passwordHash      String
+  passwordHash      String?
   name              String
   role              String // "PARENT" | "TEACHER"
   familyCode        String?        @unique // parent only: code used by children to log in on any device
   emailVerified        DateTime?
+  image                String?
+  googleId             String?        @unique
   verificationToken    String?        @unique
   resetPasswordToken   String?        @unique
   resetPasswordExpires DateTime?

@@ -70,7 +70,15 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   const user = await db.user.findUnique({ where: { email } });
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+  if (!user) {
+    return { error: "Email atau password salah" };
+  }
+
+  if (!user.passwordHash) {
+    return { error: "Akun ini terdaftar menggunakan Google. Silakan klik tombol 'Masuk dengan Google'." };
+  }
+
+  if (!(await bcrypt.compare(password, user.passwordHash))) {
     return { error: "Email atau password salah" };
   }
 
