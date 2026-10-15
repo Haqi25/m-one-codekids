@@ -1,5 +1,12 @@
 import { execSync } from "node:child_process";
 
+// Strip enclosing quotes that might be passed from Dokploy environment UI
+for (const key of Object.keys(process.env)) {
+  if (typeof process.env[key] === "string") {
+    process.env[key] = process.env[key].replace(/^["']|["']$/g, "").trim();
+  }
+}
+
 // 1. Fallback to local SQLite if DATABASE_URL is not provided in Dokploy environment
 if (!process.env.DATABASE_URL) {
   process.env.DATABASE_URL = "file:./dev.db";
@@ -27,3 +34,4 @@ execSync(`npx next start -H ${host} -p ${port}`, {
   stdio: "inherit",
   env: process.env,
 });
+
