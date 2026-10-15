@@ -6,6 +6,7 @@ const baloo = Baloo_2({ subsets: ["latin"], variable: "--font-baloo", weight: ["
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito", weight: ["400", "600", "700", "800"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://peserta39.m1sec.my.id"),
   title: {
     default: "CodeKids: Belajar Coding Seru untuk Anak SD",
     template: "%s · CodeKids",
@@ -13,6 +14,37 @@ export const metadata: Metadata = {
   description:
     "Belajar coding sambil bermain, ditemani Bibi AI yang sabar, dan dipantau orang tua dan guru. Sequencing, Looping, dan IF-ELSE lewat misi Matematika & IPA.",
   applicationName: "CodeKids",
+  keywords: [
+    "belajar coding anak",
+    "coding anak sd",
+    "belajar pemrograman dasar",
+    "bibi ai",
+    "codekids",
+    "edukasi coding indonesia",
+    "block coding",
+    "scratch anak",
+  ],
+  authors: [{ name: "CodeKids Team" }],
+  creator: "CodeKids",
+  publisher: "CodeKids",
+  verification: {
+    google: "RYSEv0e4va8pyR4ZyQiNaEnYK4wIGTC_spVgjrjhYLo",
+  },
+  openGraph: {
+    title: "CodeKids: Belajar Coding Seru untuk Anak SD",
+    description:
+      "Platform belajar coding interaktif berbasis blok untuk anak SD usia 7-12 tahun dengan pendamping AI ramah anak (Bibi).",
+    url: "https://peserta39.m1sec.my.id",
+    siteName: "CodeKids",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CodeKids: Belajar Coding Seru untuk Anak SD",
+    description:
+      "Platform belajar coding interaktif berbasis blok untuk anak SD usia 7-12 tahun dengan pendamping AI ramah anak (Bibi).",
+  },
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
